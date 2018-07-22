@@ -1,0 +1,11 @@
+com\gestionllamadastelefonicas\dao\AbstractFacade.class
+com\gestionllamadastelefonicas\entidades\CallEmpleado.class
+com\gestionllamadastelefonicas\entidades\CallEmpleado_.class
+com\gestionllamadastelefonicas\dao\CallEmpleadoDao.class
+com\gestionllamadastelefonicas\dao\CallLlamadaTEmpleadoDao.class
+com\gestionllamadastelefonicas\dao\CallLlamaTelDao.class
+com\gestionllamadastelefonicas\entidades\CallLlamadatEmpleado.class
+com\gestionllamadastelefonicas\entidades\CallLlamadaTel.class
+com\gestionllamadastelefonicas\entidades\CallLlamadatEmpleado_.class
+com\gestionllamadastelefonicas\entidades\CallLlamadaTel_.class
+com\gestionllamadastelefonicas\pruebas\Prueba.class
