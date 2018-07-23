@@ -70,6 +70,14 @@ public class CallLlamadatEmpleado implements Serializable {
         this.fechaInicioLlamada = fechaInicioLlamada;
     }
 
+    public CallLlamadatEmpleado(Date fechaInicioLlamada, CallEmpleado fkSecuenciaEmpleado, CallLlamadaTel fksecuenciallamadaT) {
+        this.fechaInicioLlamada = fechaInicioLlamada;
+        this.fkSecuenciaEmpleado = fkSecuenciaEmpleado;
+        this.fksecuenciallamadaT = fksecuenciallamadaT;
+    }
+    
+    
+
     public Integer getSecuenciaEmpLlamada() {
         return secuenciaEmpLlamada;
     }

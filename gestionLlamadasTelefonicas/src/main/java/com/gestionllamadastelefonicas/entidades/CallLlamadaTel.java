@@ -72,6 +72,12 @@ public class CallLlamadaTel implements Serializable {
         this.estadoLlamada = estadoLlamada;
     }
 
+    public CallLlamadaTel(Date fechaIngresoLlamada, String estadoLlamada) {
+        this.fechaIngresoLlamada = fechaIngresoLlamada;
+        this.estadoLlamada = estadoLlamada;
+    }
+
+    
     public Integer getSecuenciaLlamada() {
         return secuenciaLlamada;
     }

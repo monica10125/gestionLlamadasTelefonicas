@@ -5,7 +5,7 @@
  */
 package com.gestionllamadastelefonicas.pruebas;
 
-import com.gestionllamadastelefonicas.dao.CallEmpleadoDao;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import javax.servlet.ServletException;
@@ -44,8 +44,9 @@ public class PruebaServlet extends HttpServlet {
             out.println("<h1>Servlet PruebaServlet at " + request.getContextPath() + "</h1>");
             out.println("</body>");
             out.println("</html>");
-            CallEmpleadoDao callEmpleado = new CallEmpleadoDao(); 
-            callEmpleado.obtenerlistadoEmpleados();
+            
+          Prueba prueba = new Prueba();
+          prueba.listaEm();
         }
     }
 
