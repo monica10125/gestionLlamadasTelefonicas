@@ -17,7 +17,8 @@ public enum Constantes {
     ESTADO_FINALIZADO("LLAMADA FINALIZADA","4"),
     OPERADOR("operador","5"),
     SUPERVISOR("supervisor","6"),
-    DIRECTOR("director","7");
+    DIRECTOR("director","7"),
+    MAXIMOLlAMADAS("maximo numero de hilos","10");
 
     private Constantes(String value, String codigo) {
         this.value = value;

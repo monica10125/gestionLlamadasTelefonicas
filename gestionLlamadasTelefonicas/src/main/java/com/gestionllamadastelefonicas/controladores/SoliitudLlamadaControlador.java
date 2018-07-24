@@ -15,6 +15,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.ApplicationScoped;
@@ -35,23 +37,23 @@ public class SoliitudLlamadaControlador implements Serializable {
     @EJB
     CallLlamadaTelFacade llamadaTelFacade;
     @EJB
-    CallLlamadatEmpleadoFacade llamadaEmpTelFacade;
+    CallLlamadatEmpleadoFacade llamadaEmpleadoTelFacade;
 
     private boolean existenEmpleados;
     private List<CallEmpleado> listaEmpleadosD;
     private Date fechaIngreso;
+    private int solicitudesLlamada;
 
     @PostConstruct
     public void init() {
         this.existenEmpleados = false;
         this.listaEmpleadosD = new ArrayList();
      
+
     }
 
-
-
     public boolean isExistenEmpleados() {
-        System.out.println("llego aqui 2"   );
+        System.out.println("llego aqui 2");
         return existenEmpleados;
     }
 
@@ -59,18 +61,38 @@ public class SoliitudLlamadaControlador implements Serializable {
         this.existenEmpleados = existenEmpleados;
     }
 
-    public void solicitarLlamada(){
-    
-        CallLlamadaTel callLlamadaTel = new CallLlamadaTel(new Date(), 
-                                Constantes.ESTADO_REGISTRADO.getCodigo());
-        DispatcherImp dispatcherImp = new DispatcherImp();
-        dispatcherImp.dispatchCall(callLlamadaTel,llamadaTelFacade);
-    
-    } 
-    
-    
-    
-    
+    public void solicitarLlamada() {
+
+         ExecutorService executor = Executors.newFixedThreadPool(10);
+        for (int i = 0; i < 10; i++) {
+            try {
+
+                Dispatcher dispatcherImp = new Dispatcher();
+                dispatcherImp.setEmpleadoFacade(empleadoFacade);
+                dispatcherImp.setEmpleadoLlamadaFacade(llamadaEmpleadoTelFacade);
+                dispatcherImp.setLlamadaTelFacade(llamadaTelFacade);
+
+                executor.execute(dispatcherImp);
+                
+                
+                
+                
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+        }
+
+        executor.shutdown();
+
+               /* while (!executor.isTerminated()) {
+
+                        System.out.println("Lo sentimos ya existen en cola 10 llamadas");
+                }*/
+        
+    }
+
     public List<CallEmpleado> getListaEmpleadosD() {
         FacesContext context = FacesContext.getCurrentInstance();
         try {
@@ -91,14 +113,15 @@ public class SoliitudLlamadaControlador implements Serializable {
         return listaEmpleadosD;
     }
 
-    public void mostrarMensaje(){
+    public void mostrarMensaje() {
         System.out.println("llego al mensaje");
-     FacesContext context = FacesContext.getCurrentInstance();
-        context.addMessage(null, new FacesMessage("Successful",  "Your message: " + "Mensaje Prueba") );
-     
+        FacesContext context = FacesContext.getCurrentInstance();
+        context.addMessage(null, new FacesMessage("Successful", "Your message: " + "Mensaje Prueba"));
+
     }
+
     public void setListaEmpleadosD(List<CallEmpleado> listaEmpleadosD) {
-        this.listaEmpleadosD = listaEmpleadosD;   
+        this.listaEmpleadosD = listaEmpleadosD;
     }
 
 }

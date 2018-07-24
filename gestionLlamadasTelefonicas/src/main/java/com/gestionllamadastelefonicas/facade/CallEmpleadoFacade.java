@@ -13,6 +13,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
 /**
@@ -44,15 +45,26 @@ public class CallEmpleadoFacade extends AbstractFacade<CallEmpleado> {
      }
     
      public List<CallEmpleado>obtenerEmpleadosDisponibles(){
+        List<CallEmpleado> empleadosDisponibles = null;
          try {
-           TypedQuery<CallEmpleado> query = em.createQuery("select emp from CallEmpleado emp \n" +
-            "left join CallLlamadatEmpleado empl on emp.secuenciaEmpleado = empl.fkSecuenciaEmpleado.secuenciaEmpleado left join \n" +
-            "CallLlamadaTel lla on lla.secuenciaLlamada = empl.fksecuenciallamadaT.secuenciaLlamada \n" +
-            "where empl.fkSecuenciaEmpleado.secuenciaEmpleado is null or lla.estadoLlamada not in ('3') order by emp.tipoEmpleado",CallEmpleado.class);  
-           return  query.getResultList();
+         
+           /*TypedQuery<CallEmpleado> query = em.createQuery("select emp from CallEmpleado emp \n" +
+            "left join CallLlamadatEmpleado empl on emp = empl.fkSecuenciaEmpleado left join \n" +
+            "CallLlamadaTel lla on lla = empl.fksecuenciallamadaT \n" +
+            "where empl.fkSecuenciaEmpleado.secuenciaEmpleado is null or lla.estadoLlamada not in ('3') order by emp.tipoEmpleado",CallEmpleado.class);  */
+           
+          Query query = em.createNativeQuery("select emp.nombre_Empleado, emp.secuencia_empleado, emp.tipo_empleado, emp.estado_Empleado from call_empleado emp \n" +
+           "left  join call_llamadat_empleado empl on emp.secuencia_empleado = empl.fk_secuencia_empleado left \n" +
+            "join call_llamada_tel lla on lla.secuencia_llamada = empl.fk_secuencia_llamadaT \n" +
+            "where empl.fk_secuencia_empleado is null or lla.estado_llamada not in ('3') order by emp.tipo_empleado",CallEmpleado.class);
+             if (!query.getResultList().isEmpty()) {
+                 empleadosDisponibles = query.getResultList();
+             }
          } catch (Exception e) {
            throw e;
          }
+         
+        return empleadosDisponibles;
      }
     
 }

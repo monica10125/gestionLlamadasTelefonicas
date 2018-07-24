@@ -29,4 +29,6 @@ public class CallLlamadaTelFacade extends AbstractFacade<CallLlamadaTel> {
         super(CallLlamadaTel.class);
     }
     
+    
+    
 }
