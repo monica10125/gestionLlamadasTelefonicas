@@ -6,17 +6,13 @@
 package com.gestionllamadastelefonicas.controladores;
 
 import com.gestionllamadastelefonicas.entidades.CallEmpleado;
-import com.gestionllamadastelefonicas.entidades.CallLlamadaTel;
 import com.gestionllamadastelefonicas.facade.CallEmpleadoFacade;
 import com.gestionllamadastelefonicas.facade.CallLlamadaTelFacade;
 import com.gestionllamadastelefonicas.facade.CallLlamadatEmpleadoFacade;
-import com.gestionllamadastelefonicas.utilidades.Constantes;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.ApplicationScoped;
@@ -43,13 +39,12 @@ public class SoliitudLlamadaControlador implements Serializable {
     private List<CallEmpleado> listaEmpleadosD;
     private Date fechaIngreso;
     private int solicitudesLlamada;
+    
 
     @PostConstruct
     public void init() {
         this.existenEmpleados = false;
         this.listaEmpleadosD = new ArrayList();
-     
-
     }
 
     public boolean isExistenEmpleados() {
@@ -63,28 +58,12 @@ public class SoliitudLlamadaControlador implements Serializable {
 
     public void solicitarLlamada() {
 
-         ExecutorService executor = Executors.newFixedThreadPool(10);
-        for (int i = 0; i < 10; i++) {
-            try {
-
-                Dispatcher dispatcherImp = new Dispatcher();
-                dispatcherImp.setEmpleadoFacade(empleadoFacade);
-                dispatcherImp.setEmpleadoLlamadaFacade(llamadaEmpleadoTelFacade);
-                dispatcherImp.setLlamadaTelFacade(llamadaTelFacade);
-
-                executor.execute(dispatcherImp);
-                
-                
-                
-                
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-        }
-
-        executor.shutdown();
+      GestionHilosLlamadas gestionHilosLlamadas = GestionHilosLlamadas.getSingletonExecutor(llamadaTelFacade, 
+                                                            empleadoFacade, llamadaEmpleadoTelFacade);
+             
+      
+      gestionHilosLlamadas.Executor();
+      
 
                /* while (!executor.isTerminated()) {
 

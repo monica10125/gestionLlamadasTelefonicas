@@ -14,10 +14,16 @@ insert into call_empleado (
     
     insert into call_llamada_tel (
     fecha_ingreso_llamada,
-     estado_llamada
+     estado_llamada,
+     idEmpleado,
+     fecha_inicio_llamada,
+     fecha_terminacion_llamada
     )values(
     now(),
-    '1'
+    '4',
+    2,
+    now(),
+    now()
     );
     
 select * from call_llamada_tel;
@@ -47,10 +53,14 @@ c.estado_llamada = '3'
 
 
 select emp.nombre_Empleado, emp.secuencia_empleado, emp.tipo_empleado, emp.estado_Empleado from call_empleado emp 
-left  join call_llamadat_empleado empl on emp.secuencia_empleado = empl.fk_secuencia_empleado left 
+left join call_llamadat_empleado empl on emp.secuencia_empleado = empl.fk_secuencia_empleado left 
 join call_llamada_tel lla on lla.secuencia_llamada = empl.fk_secuencia_llamadaT
 where empl.fk_secuencia_empleado is null or lla.estado_llamada not in ('3') order by emp.tipo_empleado;
 
+
+select emp.nombre_Empleado, emp.secuencia_empleado, emp.tipo_empleado, emp.estado_Empleado,lla.estado_llamada from call_empleado emp ,
+call_llamada_tel lla where  (lla.idEmpleado = emp.secuencia_empleado )
+and  lla.estado_llamada not in ('3') order by emp.tipo_empleado;
 SELECT SCOPE_IDENTITY();
 
 select * from  lla left join call_llamadat_empleado empl

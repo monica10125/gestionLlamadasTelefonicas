@@ -18,13 +18,14 @@ import java.util.ArrayList;
 
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
  *
  * @author pc lenovo
  */
-public class Dispatcher implements Runnable  {
+public class Dispatcher implements Callable<CallLlamadaTel> {
 
     private CallLlamadaTelFacade llamadaTelFacade;
     private CallEmpleadoFacade empleadoFacade;
@@ -35,30 +36,27 @@ public class Dispatcher implements Runnable  {
     private CallLlamadatEmpleado callLlamadatEmpleado;
     private int segundosDefinidos;
 
-    /* public DispatcherImp(CallLlamadaTelFacade llamadaTelFacade, CallEmpleadoFacade empleadoFacade, CallLlamadatEmpleadoFacade empleadoLlamadaFacade) {
-        this.llamadaTelFacade = llamadaTelFacade;
-        this.empleadoFacade = empleadoFacade;
-        this.empleadoLlamadaFacade = empleadoLlamadaFacade;
-    }*/
-    public Dispatcher() {
+    private void limpiarParametros() {
+
         callLlamadaTel = null;
         listadoEmpleadosDisponibles = null;
         callLlamadatEmpleado = null;
     }
-    
-      @Override
-      public void run() {
-       dispatchCall();   
+
+    public Dispatcher(CallLlamadaTelFacade llamadaTelFacade, CallEmpleadoFacade empleadoFacade, CallLlamadatEmpleadoFacade empleadoLlamadaFacade) {
+        this.llamadaTelFacade = llamadaTelFacade;
+        this.empleadoFacade = empleadoFacade;
+        this.empleadoLlamadaFacade = empleadoLlamadaFacade;
+        limpiarParametros();
     }
 
-    
-    public String dispatchCall() {
+    public void dispatchCall() throws InterruptedException {
         try {
             //1. paso crea la llamada con un estado sin asignar
             registrarLllamada();
             listadoEmpleadosDisponibles = listarEmpleadosDisponibles();
             if (listadoEmpleadosDisponibles != null && !listadoEmpleadosDisponibles.isEmpty()) {
-                
+
                 for (CallEmpleado empleado : listadoEmpleadosDisponibles) {
                     /*Reglas
                     1. Asigna Primero la llamada a los operadores, si no hay disponibles, asigna a los supervisores, luego a los directores*/
@@ -86,7 +84,6 @@ public class Dispatcher implements Runnable  {
                             + " Tiempo duracion segundos:  " + TiempoFinal / 1000, "dispatchCall");
                 }
                 finalizarLlamada();
-
                 //fin empleados disponibles  
             } else {
 
@@ -94,13 +91,17 @@ public class Dispatcher implements Runnable  {
             }
         } catch (InterruptedException e) {
 
-            e.printStackTrace();
-            return "error";
+            registrarLlamdaError();
+           
+            throw e;
+            
         } catch (Exception e) {
-            e.printStackTrace();
-            return "error HILO";
+            
+            registrarLlamdaError();
+            
+            throw e;
         }
-        return "procesoExitoso";
+
     }
 
     public void registrarLllamada() {
@@ -108,10 +109,10 @@ public class Dispatcher implements Runnable  {
             fechaSistema = new Date();
             callLlamadaTel = new CallLlamadaTel(fechaSistema, Constantes.ESTADO_REGISTRADO.getCodigo());
             llamadaTelFacade.create(callLlamadaTel);
-             EscribirMensajes.escribirMensaje("Se ha registrado de manera correcta La llamada con el Id: "+callLlamadaTel.getSecuenciaLlamada(), "registrarLllamada");
+            EscribirMensajes.escribirMensaje("Se ha registrado de manera correcta La llamada con el Id: " + callLlamadaTel.getSecuenciaLlamada(), "registrarLllamada");
         } catch (Exception e) {
-          EscribirMensajes.escribirMensaje("Se Produjo un error registrando la llamada : \n"
-                  + e.getMessage(),"registrarLllamada");
+            EscribirMensajes.escribirMensaje("Se Produjo un error registrando la llamada : \n"
+                    + e.getMessage(), "registrarLllamada");
             throw e;
         }
 
@@ -136,15 +137,15 @@ public class Dispatcher implements Runnable  {
     public void asignarLlamada(CallEmpleado empleado) {
         try {
             if (callLlamadaTel != null) {
-                
+
                 callLlamadaTel.setEstadoLlamada(Constantes.ESTADO_PROCESANDO.getCodigo());
                 llamadaTelFacade.edit(callLlamadaTel);
                 fechaSistema = new Date();
                 callLlamadatEmpleado = new CallLlamadatEmpleado(fechaSistema, empleado, callLlamadaTel);
                 empleadoLlamadaFacade.create(callLlamadatEmpleado);
-                
-                 EscribirMensajes.escribirMensaje("Se ha asignado al empleado:" + empleado.getNombreEmpleado() + " de tipo: "+
-                         empleado.getTipoEmpleado()+" el id de la llamada :  "+callLlamadaTel.getSecuenciaLlamada(), "asignarLlamada");
+
+                EscribirMensajes.escribirMensaje("Se ha asignado al empleado:" + empleado.getNombreEmpleado() + " de tipo: "
+                        + empleado.getTipoEmpleado() + " el id de la llamada :  " + callLlamadaTel.getSecuenciaLlamada(), "asignarLlamada");
             }
         } catch (Exception e) {
 
@@ -166,13 +167,26 @@ public class Dispatcher implements Runnable  {
             fechaSistema = new Date();
             callLlamadatEmpleado.setFechaTerminacionLlamada(fechaSistema);
             empleadoLlamadaFacade.edit(callLlamadatEmpleado);
-            EscribirMensajes.escribirMensaje("Se ha finalizado de manera correcta la llamada del id " 
-                    +callLlamadaTel.getSecuenciaLlamada()+" Asociada al empleado "+ callLlamadatEmpleado.getFkSecuenciaEmpleado().getSecuenciaEmpleado(),"finalizarLlamada");
+            EscribirMensajes.escribirMensaje("Se ha finalizado de manera correcta la llamada del id "
+                    + callLlamadaTel.getSecuenciaLlamada() + " Asociada al empleado " + callLlamadatEmpleado.getFkSecuenciaEmpleado().getSecuenciaEmpleado(), "finalizarLlamada");
 
         } catch (Exception e) {
             throw e;
 
         }
+    }
+
+    public void registrarLlamdaError() {
+        try {
+            callLlamadaTel.setEstadoLlamada(Constantes.ESTADO_ERROR.getCodigo());
+            llamadaTelFacade.edit(callLlamadaTel);
+
+        } catch (Exception e) {
+            EscribirMensajes.escribirMensaje("Lo sentimos se presento un error registrando el estado error de"
+                    + "la llamada " + callLlamadaTel.getSecuenciaLlamada(), "registrarLlamdaError");
+
+        }
+
     }
 
     public Date getFechaSistema() {
@@ -207,6 +221,11 @@ public class Dispatcher implements Runnable  {
         this.empleadoLlamadaFacade = empleadoLlamadaFacade;
     }
 
-  
+    @Override
+    public CallLlamadaTel call() throws Exception {
+
+        dispatchCall();
+        return callLlamadaTel;
+    }
 
 }

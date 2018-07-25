@@ -15,6 +15,7 @@ public enum Constantes {
     ESTADO_PENDIENTE("LLAMADA PENDIENTE","2"),
     ESTADO_PROCESANDO("LLAMADA EN CURSO","3"),
     ESTADO_FINALIZADO("LLAMADA FINALIZADA","4"),
+    ESTADO_ERROR("LLAMADA_ESTADO_ERROR","5"),
     OPERADOR("operador","5"),
     SUPERVISOR("supervisor","6"),
     DIRECTOR("director","7"),

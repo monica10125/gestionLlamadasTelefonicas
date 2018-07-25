@@ -53,10 +53,12 @@ public class CallEmpleadoFacade extends AbstractFacade<CallEmpleado> {
             "CallLlamadaTel lla on lla = empl.fksecuenciallamadaT \n" +
             "where empl.fkSecuenciaEmpleado.secuenciaEmpleado is null or lla.estadoLlamada not in ('3') order by emp.tipoEmpleado",CallEmpleado.class);  */
            
-          Query query = em.createNativeQuery("select emp.nombre_Empleado, emp.secuencia_empleado, emp.tipo_empleado, emp.estado_Empleado from call_empleado emp \n" +
-           "left  join call_llamadat_empleado empl on emp.secuencia_empleado = empl.fk_secuencia_empleado left \n" +
-            "join call_llamada_tel lla on lla.secuencia_llamada = empl.fk_secuencia_llamadaT \n" +
-            "where empl.fk_secuencia_empleado is null or lla.estado_llamada not in ('3') order by emp.tipo_empleado",CallEmpleado.class);
+          Query query = em.createNativeQuery(" select emp.nombre_Empleado, emp.secuencia_empleado, \n" +
+          " emp.tipo_empleado, emp.estado_Empleado from call_empleado emp \n" +
+          " where emp.secuencia_empleado not in \n" +
+          "(select empl.fk_secuencia_empleado from call_llamadat_empleado empl \n" +
+          "inner  join  call_llamada_tel lla   on lla.secuencia_llamada = empl.fk_secuencia_llamadaT \n" +
+          "where lla.estado_llamada in  ('3'))",CallEmpleado.class);
              if (!query.getResultList().isEmpty()) {
                  empleadosDisponibles = query.getResultList();
              }
