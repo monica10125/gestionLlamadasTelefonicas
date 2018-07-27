@@ -60,7 +60,9 @@ public class CallEmpleadoFacade extends AbstractFacade<CallEmpleado> {
           "inner  join  call_llamada_tel lla   on lla.secuencia_llamada = empl.fk_secuencia_llamadaT \n" +
           "where lla.estado_llamada in  ('3'))",CallEmpleado.class);
              if (!query.getResultList().isEmpty()) {
+                 System.out.println("Hay resultados");
                  empleadosDisponibles = query.getResultList();
+               
              }
          } catch (Exception e) {
            throw e;
@@ -68,5 +70,6 @@ public class CallEmpleadoFacade extends AbstractFacade<CallEmpleado> {
          
         return empleadosDisponibles;
      }
-    
+
+     
 }

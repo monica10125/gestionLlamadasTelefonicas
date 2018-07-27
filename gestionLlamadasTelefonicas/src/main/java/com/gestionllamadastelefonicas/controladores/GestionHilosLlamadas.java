@@ -5,6 +5,7 @@
  */
 package com.gestionllamadastelefonicas.controladores;
 
+import com.gestionllamadastelefonicas.entidades.CallEmpleado;
 import com.gestionllamadastelefonicas.entidades.CallLlamadaTel;
 import com.gestionllamadastelefonicas.facade.CallEmpleadoFacade;
 import com.gestionllamadastelefonicas.facade.CallLlamadaTelFacade;
@@ -24,7 +25,7 @@ import java.util.concurrent.Future;
  */
 public class GestionHilosLlamadas {
 
-    public static final int NUMERO_MAXIMO_HILOS = 10;
+    public static final int NUMERO_MAXIMO_HILOS = 2;
     private CallLlamadaTelFacade llamadaTelFacade;
     private CallEmpleadoFacade empleadoFacade;
     private CallLlamadatEmpleadoFacade empleadoLlamadaFacade;
@@ -51,16 +52,19 @@ public class GestionHilosLlamadas {
 
         ExecutorService executor = Executors.newFixedThreadPool(NUMERO_MAXIMO_HILOS);
         List<Future<CallLlamadaTel>> resultadoLlamadas = new ArrayList<>();
+        List<Callable<CallLlamadaTel>> lisTak = new ArrayList<>();
+        List<CallEmpleado> listadoEmpleadosDisponibles = listarEmpleadosDisponibles();
+      
+        
+     
+        for (int i = 0; i < 6; i++) {
 
-        for (int i = 0; i < NUMERO_MAXIMO_HILOS; i++) {
+            Callable<CallLlamadaTel> callable = new Dispatcher(llamadaTelFacade,
+                    empleadoFacade, empleadoLlamadaFacade,listadoEmpleadosDisponibles);
+                    
+            lisTak.add(callable);
 
-            try {
-
-                Callable<CallLlamadaTel> callable = new Dispatcher(llamadaTelFacade,
-                        empleadoFacade, empleadoLlamadaFacade);
-                Future<CallLlamadaTel> future = executor.submit(callable);
-                resultadoLlamadas.add(future);
-
+            /*
                 for (Future<CallLlamadaTel> resultadoLlamada : resultadoLlamadas) {
 
                     try {
@@ -76,14 +80,44 @@ public class GestionHilosLlamadas {
 
                     }
                 }
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
+             */
         }
-        executor.shutdown();
 
+        try {
+            
+            
+            System.out.println("Inicio proceso");
+            resultadoLlamadas = executor.invokeAll(lisTak);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
+
+          /*  aqui continua la validacion 
+    for (Future<CallLlamadaTel> resultado : resultadoLlamadas) {
+              
+                System.out.println("Estado llamada "+  resultado.get().getEstadoLlamada());
+            }
+            executor.shutdown();
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();    
+        }
+
+    }*/
+    
+ public List<CallEmpleado> listarEmpleadosDisponibles() {
+     
+ List<CallEmpleado> listadoEmpleadosDisponibles = empleadoFacade.obtenerEmpleadosDisponibles();
+ 
+     if (listadoEmpleadosDisponibles != null && !listadoEmpleadosDisponibles.isEmpty()) {
+         
+         for (CallEmpleado listadoEmpleadosDisponible : listadoEmpleadosDisponibles) {
+             
+             listadoEmpleadosDisponible.setAsignado(false);
+         }
+     }
+        
+      return listadoEmpleadosDisponibles;
+ }
 
 }

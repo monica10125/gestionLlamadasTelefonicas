@@ -36,6 +36,3 @@ CREATE TABLE IF NOT EXISTS `Call_llamadaT_empleado` (
 )
 ENGINE = InnoDB;
 
-use mydbjdbc;
- alter table  Call_llamadaT_empleado drop column estado_procesamiento;  
-	

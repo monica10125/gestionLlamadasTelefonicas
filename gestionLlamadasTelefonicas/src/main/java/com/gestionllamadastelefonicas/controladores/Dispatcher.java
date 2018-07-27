@@ -43,26 +43,50 @@ public class Dispatcher implements Callable<CallLlamadaTel> {
         callLlamadatEmpleado = null;
     }
 
-    public Dispatcher(CallLlamadaTelFacade llamadaTelFacade, CallEmpleadoFacade empleadoFacade, CallLlamadatEmpleadoFacade empleadoLlamadaFacade) {
+    public Dispatcher(CallLlamadaTelFacade llamadaTelFacade, CallEmpleadoFacade empleadoFacade, CallLlamadatEmpleadoFacade empleadoLlamadaFacade,List<CallEmpleado>empleadosD) {
+          
         this.llamadaTelFacade = llamadaTelFacade;
         this.empleadoFacade = empleadoFacade;
         this.empleadoLlamadaFacade = empleadoLlamadaFacade;
-        limpiarParametros();
+        this.listadoEmpleadosDisponibles = empleadosD;
+       
     }
 
     public void dispatchCall() throws InterruptedException {
         try {
             //1. paso crea la llamada con un estado sin asignar
             registrarLllamada();
-            listadoEmpleadosDisponibles = listarEmpleadosDisponibles();
+           // System.out.println("Duerme tiempo Hilo");
+           
+            //listadoEmpleadosDisponibles = listarEmpleadosDisponibles();
             if (listadoEmpleadosDisponibles != null && !listadoEmpleadosDisponibles.isEmpty()) {
 
+              
                 for (CallEmpleado empleado : listadoEmpleadosDisponibles) {
+            
                     /*Reglas
                     1. Asigna Primero la llamada a los operadores, si no hay disponibles, asigna a los supervisores, luego a los directores*/
                     if (empleado.getTipoEmpleado().toLowerCase().equals(Constantes.OPERADOR.getValue())) {
-
+                        
                         asignarLlamada(empleado);
+                        if (empleado.isAsignado()) {
+                       
+                        asignarRangoLlamada();
+                        
+                        if (segundosDefinidos > 0) {
+                            EscribirMensajes.escribirMensaje("Se esta procesando la llamada con el id "+callLlamadaTel.getSecuenciaLlamada(), "dispatchCall");
+                            Long tiempoIni = System.currentTimeMillis();
+                            Thread.sleep(segundosDefinidos * 1000);
+                            Long TiempoFinal = System.currentTimeMillis() - tiempoIni;
+                            EscribirMensajes.escribirMensaje("Tiempo duracion de llamada:" +callLlamadaTel.getSecuenciaLlamada()+ "  en milisegundos : " + TiempoFinal
+                                    + " Tiempo duracion segundos:  " + TiempoFinal / 1000, "dispatchCall");
+                        }
+                        finalizarLlamada(empleado); 
+                        }else {
+                        
+                        registrarLlamadaPendiente();
+                        }
+                       
                         break;
                     } else if (empleado.getTipoEmpleado().toLowerCase().equals(Constantes.SUPERVISOR.getValue())) {
                         asignarLlamada(empleado);
@@ -76,30 +100,26 @@ public class Dispatcher implements Callable<CallLlamadaTel> {
                 asignarRangoLlamada();
                 // duracion llamada la llamada tendra una duración de acuerdo al dato calculado
                 // en el radom el cual debe encontrarse en un valor de 5 y 10.
-                if (segundosDefinidos > 0) {
-                    Long tiempoIni = System.currentTimeMillis();
-                    Thread.sleep(segundosDefinidos * 1000);
-                    Long TiempoFinal = System.currentTimeMillis() - tiempoIni;
-                    EscribirMensajes.escribirMensaje("Tiempo duracion en milisegundos : " + TiempoFinal
-                            + " Tiempo duracion segundos:  " + TiempoFinal / 1000, "dispatchCall");
-                }
-                finalizarLlamada();
+               
+                
                 //fin empleados disponibles  
             } else {
+                System.out.println("No hay empleados disponibles ");
 
                 registrarLlamadaPendiente();
             }
         } catch (InterruptedException e) {
 
             registrarLlamdaError();
-           
-            throw e;
-            
+          EscribirMensajes.escribirMensaje("Lo sentimos se presento un error de tipo "+e.getCause() +"\n"
+        + "Causa "+ e.getMessage(), "Dispatcall");
+         
         } catch (Exception e) {
-            
+
             registrarLlamdaError();
-            
-            throw e;
+
+           EscribirMensajes.escribirMensaje("Lo sentimos se presento un error de tipo "+e.getCause() +"\n"
+        + "Causa "+ e.getMessage(), "Dispatcall");
         }
 
     }
@@ -129,16 +149,18 @@ public class Dispatcher implements Callable<CallLlamadaTel> {
         }
 
     }
-
+/*
     public List<CallEmpleado> listarEmpleadosDisponibles() {
         return empleadoFacade.obtenerEmpleadosDisponibles();
-    }
+    }*/
 
     public void asignarLlamada(CallEmpleado empleado) {
         try {
-            if (callLlamadaTel != null) {
-
+            System.out.println(empleado.isAsignado());     
+            if (!empleado.isAsignado()) {
+                System.out.println("Entro aqui");
                 callLlamadaTel.setEstadoLlamada(Constantes.ESTADO_PROCESANDO.getCodigo());
+                empleado.setAsignado(true);
                 llamadaTelFacade.edit(callLlamadaTel);
                 fechaSistema = new Date();
                 callLlamadatEmpleado = new CallLlamadatEmpleado(fechaSistema, empleado, callLlamadaTel);
@@ -147,6 +169,7 @@ public class Dispatcher implements Callable<CallLlamadaTel> {
                 EscribirMensajes.escribirMensaje("Se ha asignado al empleado:" + empleado.getNombreEmpleado() + " de tipo: "
                         + empleado.getTipoEmpleado() + " el id de la llamada :  " + callLlamadaTel.getSecuenciaLlamada(), "asignarLlamada");
             }
+
         } catch (Exception e) {
 
             throw e;
@@ -158,7 +181,7 @@ public class Dispatcher implements Callable<CallLlamadaTel> {
         segundosDefinidos = ThreadLocalRandom.current().nextInt(5, 9 + 1);
     }
 
-    public void finalizarLlamada() {
+    public void finalizarLlamada(CallEmpleado emp) {
 
         try {
 
@@ -167,6 +190,7 @@ public class Dispatcher implements Callable<CallLlamadaTel> {
             fechaSistema = new Date();
             callLlamadatEmpleado.setFechaTerminacionLlamada(fechaSistema);
             empleadoLlamadaFacade.edit(callLlamadatEmpleado);
+            emp.setAsignado(false);
             EscribirMensajes.escribirMensaje("Se ha finalizado de manera correcta la llamada del id "
                     + callLlamadaTel.getSecuenciaLlamada() + " Asociada al empleado " + callLlamadatEmpleado.getFkSecuenciaEmpleado().getSecuenciaEmpleado(), "finalizarLlamada");
 
@@ -188,6 +212,22 @@ public class Dispatcher implements Callable<CallLlamadaTel> {
         }
 
     }
+    
+    /*public void gestionarLlamada(CallEmpleado emp){
+    
+     asignarRangoLlamada();
+                // duracion llamada la llamada tendra una duración de acuerdo al dato calculado
+                // en el radom el cual debe encontrarse en un valor de 5 y 10.
+                if (segundosDefinidos > 0) {
+                    Long tiempoIni = System.currentTimeMillis();
+                    Thread.sleep(segundosDefinidos * 1000);
+                    Long TiempoFinal = System.currentTimeMillis() - tiempoIni;
+                    EscribirMensajes.escribirMensaje("Tiempo duracion en milisegundos : " + TiempoFinal
+                            + " Tiempo duracion segundos:  " + TiempoFinal / 1000, "dispatchCall");
+                }
+                finalizarLlamada();
+    
+    }*/
 
     public Date getFechaSistema() {
         return fechaSistema;

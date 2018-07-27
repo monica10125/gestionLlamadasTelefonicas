@@ -11,4 +11,6 @@ package com.gestionllamadastelefonicas.entidades;
  */
 public class CallRespuesta {
     
+    
+    
 }

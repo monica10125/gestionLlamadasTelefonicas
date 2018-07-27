@@ -5,10 +5,14 @@
  */
 package com.gestionllamadastelefonicas.facade;
 
+import com.gestionllamadastelefonicas.entidades.CallEmpleado;
 import com.gestionllamadastelefonicas.entidades.CallLlamadaTel;
+import com.gestionllamadastelefonicas.entidades.CallLlamadatEmpleado;
+import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 
 /**
  *
@@ -29,6 +33,6 @@ public class CallLlamadaTelFacade extends AbstractFacade<CallLlamadaTel> {
         super(CallLlamadaTel.class);
     }
     
-    
+
     
 }

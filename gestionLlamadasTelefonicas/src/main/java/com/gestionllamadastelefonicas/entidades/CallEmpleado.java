@@ -18,6 +18,7 @@ import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -60,6 +61,9 @@ public class CallEmpleado implements Serializable {
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "fkSecuenciaEmpleado")
     private List<CallLlamadatEmpleado> callLlamadatEmpleadoList;
 
+    @Transient
+    private boolean asignado;
+    
     public CallEmpleado() {
     }
 
@@ -137,6 +141,20 @@ public class CallEmpleado implements Serializable {
     @Override
     public String toString() {
         return "com.gestionllamadastelefonicas.entiidades.CallEmpleado[ secuenciaEmpleado=" + secuenciaEmpleado + " ]";
+    }
+
+    /**
+     * @return the asignado
+     */
+    public boolean isAsignado() {
+        return asignado;
+    }
+
+    /**
+     * @param asignado the asignado to set
+     */
+    public void setAsignado(boolean asignado) {
+        this.asignado = asignado;
     }
     
 }
